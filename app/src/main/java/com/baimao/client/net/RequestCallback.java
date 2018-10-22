@@ -1,11 +1,13 @@
 package com.baimao.client.net;
 
 import android.content.Context;
-import android.util.Log;
 
 import io.reactivex.observers.DisposableObserver;
 
-public class RequestCallback<T> extends DisposableObserver<T> {
+/**
+ * @author Cris
+ */
+public abstract class RequestCallback<T> extends DisposableObserver<T> {
 
 
     private Context context;
@@ -32,26 +34,26 @@ public class RequestCallback<T> extends DisposableObserver<T> {
         }
     }
 
+
     @Override
     protected void onStart() {
+        super.onStart();
         showProgressDialog();
-        Log.i("RXJAVA2", "onStart");
     }
 
     @Override
     public void onNext(T t) {
-        Log.i("RXJAVA2", "onNext");
     }
 
     @Override
     public void onComplete() {
         dismissProgressDialog();
-        Log.i("RXJAVA2", "onComplete");
     }
 
     @Override
     public void onError(Throwable e) {
         dismissProgressDialog();
-        Log.i("RXJAVA2", "onError");
     }
+
+
 }

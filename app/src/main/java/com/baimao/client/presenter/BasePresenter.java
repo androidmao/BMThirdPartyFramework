@@ -12,4 +12,5 @@ public class BasePresenter {
         }
         return manager;
     }
+
 }
