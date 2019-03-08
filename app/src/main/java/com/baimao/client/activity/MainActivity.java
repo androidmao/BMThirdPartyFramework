@@ -4,19 +4,26 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.baimao.client.R;
 import com.baimao.client.adapter.MyListAdapter;
 import com.baimao.client.bean.TranslationResult;
 import com.baimao.client.bean.UserInfo;
+import com.baimao.client.net.NetWorkCallBack;
 import com.baimao.client.net.RequestCallback;
+import com.baimao.client.net.SimpleResponse;
 import com.baimao.client.presenter.UserPresenter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
 
 
 public class MainActivity extends BaseActivity {
@@ -57,15 +64,25 @@ public class MainActivity extends BaseActivity {
         }
 
         UserPresenter presenter = new UserPresenter();
-        presenter.getTranslationResult(content, new RequestCallback<TranslationResult>(this) {
+//        presenter.getTranslationResult(content, new RequestCallback<TranslationResult>(this) {
+//
+//            @Override
+//            public void onNext(TranslationResult translationResult) {
+//                super.onNext(translationResult);
+//                tv_result.setText(translationResult.getContent().getOut());
+//            }
+//
+//        });
+
+        presenter.getResult(content, new NetWorkCallBack<TranslationResult, String>(this, true) {
 
             @Override
-            public void onNext(TranslationResult translationResult) {
-                super.onNext(translationResult);
-                tv_result.setText(translationResult.getContent().getOut());
+            public void onResponse(SimpleResponse<TranslationResult, String> response) {
+                super.onResponse(response);
+                tv_result.setText(response.succeed().getContent().getOut());
             }
-
         });
+
 
     }
 

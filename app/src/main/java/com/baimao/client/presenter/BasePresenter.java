@@ -13,4 +13,8 @@ public class BasePresenter {
         return manager;
     }
 
+    public <T> T getService(Class<T> service) {
+        return getManager().getService(service);
+    }
+
 }

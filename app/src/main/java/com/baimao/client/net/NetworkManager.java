@@ -4,11 +4,15 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkManager {
+
 
     private Retrofit retrofit;
 
@@ -17,8 +21,9 @@ public class NetworkManager {
             //步骤4:创建Retrofit对象
             retrofit = new Retrofit.Builder()
                     .baseUrl("http://fy.iciba.com/")
+//                    .baseUrl("http://api.alluxs.com/")
                     .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
         }
         return retrofit;
@@ -35,5 +40,35 @@ public class NetworkManager {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
     }
+
+
+    public void request(Call<ResponseBody> call, final ReqCallBack callback) {
+
+        if (callback != null) {
+            callback.onStart();
+        }
+        if (call != null) {
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (callback != null) {
+                        callback.onEnd();
+                        callback.onResponse(call, response);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    if (callback != null) {
+                        callback.onEnd();
+                        callback.onError(call, t);
+                    }
+                }
+            });
+        }
+
+
+    }
+
 
 }
