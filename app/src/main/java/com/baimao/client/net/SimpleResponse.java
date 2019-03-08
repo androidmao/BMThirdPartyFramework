@@ -21,6 +21,9 @@ public class SimpleResponse<Succeed, Failed> {
         return responseCode;
     }
 
+    public boolean isSucceed() {
+        return mFailed == null || mSucceed != null;
+    }
 
     public Succeed succeed() {
         return mSucceed;

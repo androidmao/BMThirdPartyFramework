@@ -1,7 +1,6 @@
 package com.baimao.client.net;
 
 import android.app.Activity;
-import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -21,7 +20,7 @@ public abstract class NetWorkCallBack<S, F> implements ReqCallBack {
 
     private boolean isShowgressDialog;
 
-    public NetWorkCallBack(Activity activity, boolean isShowgressDialog) {
+    protected NetWorkCallBack(Activity activity, boolean isShowgressDialog) {
         this.activity = activity;
         this.isShowgressDialog = isShowgressDialog;
     }
@@ -31,23 +30,21 @@ public abstract class NetWorkCallBack<S, F> implements ReqCallBack {
     private void showProgressDialog() {
         if (hub == null) {
             hub = new BMProgressHUB(activity);
-            if (!hub.isShowing()) {
-                hub.show();
-            }
+        }
+        if (!hub.isShowing()) {
+            hub.show();
         }
     }
 
     private void dismissProgressDialog() {
-        if (hub != null) {
+        if (hub != null && hub.isShowing()) {
             hub.dismiss();
-            hub = null;
         }
     }
 
 
     @Override
     public void onStart() {
-        Log.e("TAG", "onStart()" + Thread.currentThread().getName());
         if (isShowgressDialog) {
             showProgressDialog();
         }
@@ -58,7 +55,6 @@ public abstract class NetWorkCallBack<S, F> implements ReqCallBack {
         if (isShowgressDialog) {
             dismissProgressDialog();
         }
-        Log.e("TAG", "onEnd()" + Thread.currentThread().getName());
     }
 
     @Override
@@ -80,32 +76,29 @@ public abstract class NetWorkCallBack<S, F> implements ReqCallBack {
 
                 serverJson = response.body().string();
 
-                Log.e("HttpRequest", "ResponseBody:" + serverJson);
-
-                if (code >= 200 && code < 300) {
-
+                if (response.isSuccessful()) {
                     if (succeed.equals(String.class)) {
                         succeedData = (S) serverJson;
                     } else {
                         succeedData = gson.fromJson(serverJson, succeed);
                     }
+                } else {
+                    if (code >= 400 && code < 500) {
+                        failedData = gson.fromJson(serverJson, failed);
 
-                } else if (code >= 400 && code < 500) {
-                    failedData = gson.fromJson(serverJson, failed);
+                        if (code == 403) {
+                            failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"没有访问权限\"}", failed);
+                        } else if (code == 404) {
+                            failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"未找到指定路径\"}", failed);
+                        } else if (failedData == null) {
+                            failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"未知异常\"}", failed);
+                        }
 
-                    if (code == 403) {
-                        failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"没有访问权限\"}", failed);
-                    } else if (code == 404) {
-                        failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"未找到指定路径\"}", failed);
+                    } else if (code >= 500) {
+                        failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"服务器异常\"}", failed);
                     }
-
-                    if (failedData == null) {
-                        failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"未知异常\"}", failed);
-                    }
-
-                } else if (code >= 500) {
-                    failedData = gson.fromJson("{\"error_code\": \"999999998\",\"error_message\": \"服务器异常\"}", failed);
                 }
+
 
             } catch (IOException e) {
                 onError(null, e);

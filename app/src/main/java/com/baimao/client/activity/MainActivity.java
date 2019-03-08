@@ -74,12 +74,12 @@ public class MainActivity extends BaseActivity {
 //
 //        });
 
-        presenter.getResult(content, new NetWorkCallBack<TranslationResult, String>(this, true) {
+        presenter.getResult(content, new NetWorkCallBack<String, String>(this, true) {
 
             @Override
-            public void onResponse(SimpleResponse<TranslationResult, String> response) {
+            public void onResponse(SimpleResponse<String, String> response) {
                 super.onResponse(response);
-                tv_result.setText(response.succeed().getContent().getOut());
+                tv_result.setText(response.succeed());
             }
         });
 

@@ -1,9 +1,16 @@
 package com.baimao.client.net;
 
+import android.util.Log;
+
+import java.io.IOException;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -16,13 +23,41 @@ public class NetworkManager {
 
     private Retrofit retrofit;
 
+    private OkHttpClient client;
+
     private Retrofit getRetrofit() {
         if (retrofit == null) {
+
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.addInterceptor(new Interceptor() {
+                @Override
+                public okhttp3.Response intercept(Chain chain) throws IOException {
+                    Request original = chain.request();
+
+
+                    Log.e("TAG", "interceptintercept----"+original.headers().toString());
+
+                    // Request customization: add request headers
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .addHeader("header-key", "value1")
+                            .addHeader("header-key", "value2");
+
+                    Request request = requestBuilder.build();
+
+                    Log.e("TAG", "interceptintercept----"+request.headers().toString());
+
+                    return chain.proceed(request);
+                }
+            });
+
+            client = builder.build();
+
             //步骤4:创建Retrofit对象
             retrofit = new Retrofit.Builder()
                     .baseUrl("http://fy.iciba.com/")
 //                    .baseUrl("http://api.alluxs.com/")
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(client)
 //                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
         }
